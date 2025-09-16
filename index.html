@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resume Summarizer — Skapi + Google + Gemini</title>
+  <script src="https://cdn.jsdelivr.net/npm/skapi-js@latest/dist/skapi.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container">
+    <h2 id="title">Resume Summarizer 🚀</h2>
+
+    <div class="grid">
+      <div>
+        <!-- Login Section -->
+        <div id="auth">
+          <p><button id="googleBtn" class="btn google">Login with Google</button></p>
+          <p class="small">Login securely via Google, <br> managed by Skapi.</p>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile" class="card hidden">
+          <img id="pic" width="80" alt="avatar" />
+          <h3>Welcome, <span id="name"></span></h3>
+          <p id="email"></p>
+          <button id="logout" class="btn secondary">Logout</button>
+        </div>
+
+        <!-- Resume Section -->
+        <div id="resume-section" class="card hidden">
+          <h3>Upload / Paste your Résumé</h3>
+          <textarea id="resumeText" placeholder="Paste résumé text here..."></textarea>
+          <p><button id="summarizeBtn" class="btn primary">Summarize Resume with Gemini</button></p>
+        </div>
+      </div>
+
+      <div>
+        <!-- Summary Output -->
+        <div id="summary" class="summary card"></div>
+        <p><button id="saveSummaryBtn" class="btn success hidden">Save this Summary</button></p>
+
+        <!-- Saved Summaries -->
+        <div id="saved-section" class="card hidden">
+          <h3>Your Saved Summaries</h3>
+          <div id="savedSummaries"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
