@@ -4,10 +4,8 @@ const OWNER = "your-owner-id";     // From Skapi Dashboard
 const GOOGLE_CLIENT_ID = "your-google-client-id";
 const CLIENT_SECRET_NAME = "ggltoken"; // Name you'll use in Skapi Dashboard
 const OPENID_LOGGER_ID = "google";
-// ⚠️ Update this if you use a different local server port!
-const REDIRECT_URL = window.location.origin + window.location.pathname;
-const GEMINI_API_KEY = "your-gemini-api-key";
-
+const REDIRECT_URL = window.location.origin + window.location.pathname || "http://localhost:5500/";
+const GEMINI_API_KEY = "GEMINI_API_KEY"; // Name you'll use in Skapi Dashboard
 /* ============================================ */
 
 const skapi = new Skapi(SERVICE, OWNER);
@@ -44,14 +42,6 @@ function googleLogin() {
   window.location.href = url;
 }
 
-async function skapiOpenIdLogin(id, token) {
-  if (typeof skapi.openIdLogin === "function") {
-    return skapi.openIdLogin({ id, token });
-  } else if (typeof skapi.openidLogin === "function") {
-    return skapi.openidLogin({ id, token });
-  }
-}
-
 async function handleRedirect() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
@@ -71,7 +61,10 @@ async function handleRedirect() {
       },
     });
     const accessToken = tokenResp.access_token;
-    await skapiOpenIdLogin(OPENID_LOGGER_ID, accessToken);
+    await skapi.openIdLogin({
+      id: OPENID_LOGGER_ID,
+      token: accessToken
+    });
     history.replaceState(null, "", REDIRECT_URL);
     const profileResp = await skapi.getProfile();
     showProfile(profileResp);
@@ -140,26 +133,27 @@ summarizeBtn.addEventListener("click", async () => {
   saveSummaryBtn.classList.add("hidden");
 
   try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" +
-      GEMINI_API_KEY,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: "Summarize this résumé in 5 bullet points:\n\n" + text }],
-            },
-          ],
-        }),
-      }
-    );
+    const response = await skapi.clientSecretRequest({
+      clientSecretName: "GEMINI_API_KEY",
+      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: {
+        key: "$CLIENT_SECRET",
+      },
+      data: {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: "Summarize this résumé in 5 bullet points:\n\n" + text }],
+          },
+        ],
+      },
+    });
 
-    const data = await response.json();
-
-    let summary = data.candidates?.[0]?.content?.parts?.[0]?.text || "No summary returned.";
+    let summary = response.candidates?.[0]?.content?.parts?.[0]?.text || "No summary returned.";
     summary = summary.replace(/^\*+/gm, "").trim();
 
     latestSummary = summary;
